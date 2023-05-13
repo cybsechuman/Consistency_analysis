@@ -3,3 +3,5 @@ A part of the consistency analysis, extracts relevant information from PDFs, for
 
 
 Privacy policy reading and consistency analysis using GPT API, using bhaskatripathi's pdfGPT implementation and manual Session capture, decryption and analysis to compare data received from privacy policy against data inferred from session capture. 
+
+Hosted on huggingface: can be run as a docker container.
