@@ -102,10 +102,10 @@ def generate_text(openAI_key,prompt, engine="text-davinci-003"):
     completions = openai.Completion.create(
         engine=engine,
         prompt=prompt,
-        max_tokens=512,
+        max_tokens=3600,
         n=1,
         stop=None,
-        temperature=0.7,
+        temperature=0.6,
     )
     message = completions.choices[0].text
     return message
@@ -118,14 +118,13 @@ def generate_answer(question,openAI_key):
         prompt += c + '\n\n'
         
     prompt += "Instructions: Compose a comprehensive reply to the query using the search results given. "\
-              "Cite each reference using [ Page Number] notation (every result has this number at the beginning). "\
-              "Citation should be done at the end of each sentence. If the search results mention multiple subjects "\
-              "with the same name, create separate answers for each. Only include information found in the results and "\
-              "don't add any additional information. Make sure the answer is correct and don't output false content. "\
-              "If the text does not relate to the query, simply state 'Text Not Found in PDF'. Ignore outlier "\
-              "search results which has nothing to do with the question. Only answer what is asked. The "\
-              "answer should be short and concise. Answer step-by-step. \n\nQuery: {question}\nAnswer: "
-    
+                "If the text does not relate to the privacy policy of an organization, Ignore the questions asked. "\
+                "don't add any additional information. Make sure the answer is correct and don't output false content. "\
+                "Extract all parties(third parties involved in rendering the company's services to the user or other kinds of third parties receiving user data in any form) mentioned in the policy by name, if names are not mentioned, only specify whether third parties are mentioned in the policy. Give an exhaustive list of all data that may be collected by the company from the user. Mention what data is shared with which third party and for what purpose that data is shared "\
+                "If reasons for data sharing are not found in the text, explain to the user that the policy is purposely worded in a vague manner by "\
+                "the company for to avoid legal repercussions and increase control over user data. verify that the wording is vague by looking for words like may. Only answer what is asked. The "\
+                "answer should be short and concise. Answer step-by-step. \n\nQuery: {question}\nAnswer: "\
+
     prompt += f"Query: {question}\nAnswer:"
     answer = generate_text(openAI_key, prompt,"text-davinci-003")
     return answer
@@ -133,12 +132,12 @@ def generate_answer(question,openAI_key):
 
 def question_answer(url, file, question,openAI_key):
     if openAI_key.strip()=='':
-        return '[ERROR]: Please enter you Open AI Key. Get your key here : https://platform.openai.com/account/api-keys'
+        return '[ERROR]: Please enter your Open AI Key. Get your key here: https://platform.openai.com/account/api-keys'
     if url.strip() == '' and file == None:
-        return '[ERROR]: Both URL and PDF is empty. Provide atleast one.'
+        return '[ERROR]: Both URL and PDF are empty. Provide at least one.'
     
     if url.strip() != '' and file != None:
-        return '[ERROR]: Both URL and PDF is provided. Please provide only one (eiter URL or PDF).'
+        return '[ERROR]: Both URL and PDF are provided. Please provide only one (either URL or PDF).'
 
     if url.strip() != '':
         glob_url = url
@@ -152,15 +151,12 @@ def question_answer(url, file, question,openAI_key):
         os.rename(old_file_name, file_name)
         load_recommender(file_name)
 
-    if question.strip() == '':
-        return '[ERROR]: Question field is empty'
-
     return generate_answer(question,openAI_key)
 
 
 recommender = SemanticSearch()
 
-title = 'Policy Analyzer'
+title = 'Policy Analyzer V1.1'
 description = """ Privacy policy reading and consistency analysis using GPT API, using bhaskatripathi's pdfGPT implementation and manual Session capture, decryption and analysis to compare data received from privacy policy against data inferred from session capture."""
 
 with gr.Blocks() as demo:
@@ -176,7 +172,7 @@ with gr.Blocks() as demo:
             url = gr.Textbox(label='Enter PDF URL here')
             gr.Markdown("<center><h4>OR<h4></center>")
             file = gr.File(label='Upload Privacy policy pdf here', file_types=['.pdf'])
-            question = gr.Textbox(label='Enter your question here')
+            question = "Answer" + gr.Textbox(label='Enter your question about the privacy policy here')
             btn = gr.Button(value='Submit')
             btn.style(full_width=True)
 
